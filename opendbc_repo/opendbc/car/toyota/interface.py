@@ -106,6 +106,11 @@ class CarInterface(CarInterfaceBase):
     # Detect flipped signals and enable for C-HR and others
     ret.enableBsm = 0x3F6 in fingerprint[0] and candidate in TSS2_CAR
 
+    # 0x343 should not be present on bus 2 on cars other than TSS2_CAR unless we are re-routing DSU
+    if (0x343 in fingerprint[2] or 0x4CB in fingerprint[2]) and candidate not in TSS2_CAR:
+      ret.flags |= ToyotaFlags.DSU_BYPASS.value
+
+
     # No radar dbc for cars without DSU which are not TSS 2.0
     # TODO: make an adas dbc file for dsu-less models
     ret.radarUnavailable = Bus.radar not in DBC[candidate] or candidate in (NO_DSU_CAR - TSS2_CAR)
@@ -129,7 +134,8 @@ class CarInterface(CarInterfaceBase):
     else:
       ret.openpilotLongitudinalControl = ret.enableDsu or \
         candidate in (TSS2_CAR - RADAR_ACC_CAR) or \
-        bool(ret.flags & ToyotaFlags.DISABLE_RADAR.value)
+        bool(ret.flags & ToyotaFlags.DISABLE_RADAR.value) \
+        or bool(ret.flags & ToyotaFlags.DSU_BYPASS.value)
 
     ret.autoResumeSng = ret.openpilotLongitudinalControl and candidate in NO_STOP_TIMER_CAR
 

@@ -58,7 +58,8 @@ class CarState(CarStateBase):
     cp_cam = can_parsers[Bus.cam]
 
     ret = structs.CarState()
-    cp_acc = cp_cam if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) else cp
+    cp_acc = cp_cam if (self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or \
+      bool(self.CP.flags & ToyotaFlags.DSU_BYPASS.value)) else cp
 
     if not self.CP.flags & ToyotaFlags.SECOC.value:
       self.gvc = cp.vl["VSC1S07"]["GVC"]
@@ -151,7 +152,8 @@ class CarState(CarStateBase):
       conversion_factor = CV.KPH_TO_MS if is_metric else CV.MPH_TO_MS
       ret.cruiseState.speedCluster = cluster_set_speed * conversion_factor
 
-    if self.CP.carFingerprint in TSS2_CAR and not self.CP.flags & ToyotaFlags.DISABLE_RADAR.value:
+    if (self.CP.flags & ToyotaFlags.DSU_BYPASS.value) or (self.CP.carFingerprint in TSS2_CAR \
+       and not self.CP.flags & ToyotaFlags.DISABLE_RADAR.value):
       self.acc_type = cp_acc.vl["ACC_CONTROL"]["ACC_TYPE"]
       ret.stockFcw = bool(cp_acc.vl["PCS_HUD"]["FCW"])
 
@@ -240,7 +242,8 @@ class CarState(CarStateBase):
         ("ACC_CONTROL", 33),
       ]
 
-    if CP.carFingerprint not in (TSS2_CAR - RADAR_ACC_CAR) and not CP.enableDsu and not CP.flags & ToyotaFlags.DISABLE_RADAR.value:
+    if CP.carFingerprint not in (TSS2_CAR - RADAR_ACC_CAR) and not CP.enableDsu and \
+      not (CP.flags & ToyotaFlags.DISABLE_RADAR.value or CP.flags & ToyotaFlags.DSU_BYPASS.value):
       pt_messages += [
         ("PRE_COLLISION", 33),
       ]
@@ -251,7 +254,7 @@ class CarState(CarStateBase):
         ("LKAS_HUD", 1),
       ]
 
-    if CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
+    if CP.flags & ToyotaFlags.DSU_BYPASS.value or CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
       cam_messages += [
         ("ACC_CONTROL", 33),
         ("PCS_HUD", 1),

@@ -61,6 +61,7 @@ class ToyotaFlags(IntFlag):
   # Detected flags
   HYBRID = 1
   DISABLE_RADAR = 4
+  DSU_BYPASS = 512
 
   # Static flags
   TSS2 = 8
