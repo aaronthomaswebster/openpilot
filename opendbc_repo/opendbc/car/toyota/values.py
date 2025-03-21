@@ -61,8 +61,6 @@ class ToyotaFlags(IntFlag):
   # Detected flags
   HYBRID = 1
   DISABLE_RADAR = 4
-  DSU_BYPASS = 512
-
   # Static flags
   TSS2 = 8
   NO_DSU = 16
@@ -76,6 +74,9 @@ class ToyotaFlags(IntFlag):
   # these cars can utilize 2.0 m/s^2
   RAISED_ACCEL_LIMIT = 1024
   SECOC = 2048
+
+  DSU_BYPASS = 4096
+
 
 class Footnote(Enum):
   CAMRY = CarFootnote(
